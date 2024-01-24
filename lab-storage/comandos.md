@@ -9,7 +9,7 @@ mkdir /mnt/demo
 echo "Hola de Kubernetes" > /mnt/demo/index.html
 ```
 
-Crear un archivo yaml para definir el volumen:
+Crear un archivo persistent_volume.yaml para definir el volumen:
 ```yaml
 
 apiVersion: v1    
@@ -27,4 +27,9 @@ spec:
   hostPath: 
     path: "/mnt/demo"
 
+```
+
+
+```console
+kubectl apply -f persistent_volume.yaml
 ```
