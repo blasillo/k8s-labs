@@ -86,3 +86,9 @@ Creamos un pod con el volumen persistente:
 ```console
 kubectl apply -f pvc_pod.yaml
 ```
+
+Comprobar que se ejecuta el pod:
+```console
+kubectl get pods -o wide
+kubectl exec --stdin --tty task-pv-pod -- /bin/bash
+```
