@@ -38,6 +38,7 @@ kubectl apply -f persistent_volume.yaml
 Un claim de volumen peristente es una solicitud del volumen creado. 
 
 Se crea un archivo volume_claim.yaml para realizar la solicitud
+
 ```yaml
 apiVersion: v1    
 kind: PersistentVolumeClaim 
