@@ -41,3 +41,4 @@ spec:
         - name: init-volume
           mountPath: /usr/share/nginx/html
 ```
+
