@@ -29,6 +29,28 @@ $ sudo pip install pwncat-cs
 $ pwncat-cs -lp <LPORT>
 ```
 
+Una vez abierto el shell, probablemente seamos `root` aunque veremos que el conjunto de instrucciones de las que disponemos es bastante limitado dentro del contenedor.
+
+¿Cómo se sabe que estás dendro de un contenedor?
+
+Hay varios indicios:
+
+- Probablemente en habrá un archivo `/.dockerenv`
+- El comando `env` tendrá información de diversos compenentes :
+   ```
+   KUBERNETES_PORT_443_TCP_PROTO=
+   KUBERNETES_PORT_443_TCP_ADDR=
+   KUBERNETES_SERVICE_HOST=
+   KUBERNETES_PORT=
+   ...
+   ```
+   
+
+
+
+
+
+
 
 
 
