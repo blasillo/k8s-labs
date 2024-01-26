@@ -87,7 +87,7 @@ developer-token-yyy   kubernetes.io/service-account-token    3  24d
    
 ...
 ```
-Para ver esto `secrets` se puede usar:
+Para ver el contenido de un  `secrets` se puede usar:
 
 ```console
 $ ./kubectl get secrets developer-token-yyy -o json
@@ -106,6 +106,25 @@ Probablemente no tengamos permisos para ver otros pods que estén en ejecución:
 $ ./kubectl get pods
 Error from server (Forbidden): ...
 ```
+
+```console
+$ curl -vvv http://grafana:3000 
+
+
+$ curl -L http://grafana:3000 
+
+```
+Como conocemos que puede haber otros servicios ejecutando en el clúster (ver los resultados del comando `env`) intentamos conectar a esos servicios conociendo la IP y el puerto:
+
+```console
+$ curl -vvv http://grafana:3000 
+
+
+$ curl -L http://grafana:3000 
+
+```
+
+Y buscar versiones vulnerables en alguno de los servicios. Por ejemplo, Grafana 8.3.0 que es vulnerable a Directory Traversal y es posible leer cualquier archivo.
 
 
 
