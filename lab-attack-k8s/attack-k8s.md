@@ -1,4 +1,4 @@
-# Atacar un cluster de Kubernetes: dedes un pod a todo el cluster
+# Atacar un cluster de Kubernetes: desde comprometer un pod a hacerse con todo el cluster
 
 
  Esta basado en el video : https://www.youtube.com/watch?v=iD_klswHJQs
